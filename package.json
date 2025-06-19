@@ -8,11 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:react": "react-scripts build"  // Added a separate build for react
   },
-  "scripts": {
-  "build": "react-scripts build"
-}
   "dependencies": {
     "@capacitor/android": "^7.4.0",
     "@capacitor/cli": "^7.4.0",
