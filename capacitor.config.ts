@@ -2,9 +2,12 @@
 import { CapacitorConfig } from '@capacitor/core';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.273ab87a8f3349d2b2558b7d836af1cb',
-  appName: 'com.flirtnplay.com',
-  webDir: 'dist',
+  {
+  "appId": "com.lovable.app",
+  "appName": "FlirtnPlay",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
   server: {
     url: 'https://273ab87a-8f33-49d2-b255-8b7d836af1cb.lovableproject.com?forceHideBadge=true',
     cleartext: true
