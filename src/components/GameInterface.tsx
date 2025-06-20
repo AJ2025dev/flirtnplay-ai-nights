@@ -9,6 +9,7 @@ import { toast } from "sonner";
 interface GameInterfaceProps {
   user: any;
   companion: any;
+  environment: any;
   difficulty: string;
   onExit: () => void;
 }
@@ -19,7 +20,7 @@ interface PlayerCard {
   id: string;
 }
 
-const GameInterface = ({ user, companion, difficulty, onExit }: GameInterfaceProps) => {
+const GameInterface = ({ user, companion, environment, difficulty, onExit }: GameInterfaceProps) => {
   const [gamePhase, setGamePhase] = useState<'betting' | 'cards' | 'reveal' | 'result'>('betting');
   const [playerCards, setPlayerCards] = useState<PlayerCard[]>([]);
   const [playerChips, setPlayerChips] = useState(user?.chips || 1000);
@@ -34,7 +35,7 @@ const GameInterface = ({ user, companion, difficulty, onExit }: GameInterfacePro
     clothingLevel: 5,
     maxClothing: 5,
     mood: 'flirty' as 'flirty' | 'confident' | 'nervous' | 'excited',
-    currentAction: `Hello there... I'm ${companion.name}. Ready to play some strip poker?`
+    currentAction: `Welcome to the ${environment.name}... I'm ${companion.name}. Ready to play some strip poker?`
   });
 
   const [gameHistory, setGameHistory] = useState<string[]>([]);
@@ -219,7 +220,7 @@ const GameInterface = ({ user, companion, difficulty, onExit }: GameInterfacePro
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
+    <div className={`min-h-screen bg-gradient-to-br ${environment.background} p-4`}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <Button onClick={onExit} variant="ghost" className="text-white hover:bg-white/10">
@@ -254,6 +255,13 @@ const GameInterface = ({ user, companion, difficulty, onExit }: GameInterfacePro
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-2">{aiCharacter.name}</h3>
                 <p className="text-gray-300 mb-4">{aiCharacter.personality}</p>
+                
+                {/* Environment Info */}
+                <div className="mb-4 p-3 rounded-lg bg-black/30">
+                  <div className="text-lg mb-1">{environment.icon}</div>
+                  <div className="text-sm text-gray-300">{environment.name}</div>
+                  <div className="text-xs text-gray-400">{environment.description}</div>
+                </div>
                 
                 {/* Clothing Level */}
                 <div className="mb-4">
@@ -291,7 +299,7 @@ const GameInterface = ({ user, companion, difficulty, onExit }: GameInterfacePro
             <CardContent className="p-6">
               <div className="text-center">
                 <h2 className="text-3xl font-bold text-white mb-6">
-                  Strip Poker vs {aiCharacter.name}
+                  Strip Poker in {environment.name}
                 </h2>
                 
                 {gamePhase === 'betting' && (
