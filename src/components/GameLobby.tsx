@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Coins, Star, Play, Crown, Heart, Sparkles, Bed, Home, Coffee } from "lucide-react";
+import { Coins, Star, Play, Crown, Heart, Sparkles, Home } from "lucide-react";
 import GameInterface from "./GameInterface";
 
 interface GameLobbyProps {
@@ -52,24 +52,6 @@ const GameLobby = ({ user }: GameLobbyProps) => {
       mood: "glamorous",
       unlockCost: 500,
       background: "from-blue-900 to-indigo-900"
-    },
-    {
-      id: 5,
-      name: "Hot Tub Deck",
-      icon: "🛁",
-      description: "Steamy hot tub with bubbles and romantic lighting",
-      mood: "steamy",
-      unlockCost: 800,
-      background: "from-teal-900 to-cyan-900"
-    },
-    {
-      id: 6,
-      name: "VIP Casino Suite",
-      icon: "💎",
-      description: "Exclusive casino suite with premium amenities",
-      mood: "high-end",
-      unlockCost: 1500,
-      background: "from-gold-900 to-yellow-900"
     }
   ];
 
@@ -96,16 +78,6 @@ const GameLobby = ({ user }: GameLobbyProps) => {
     },
     {
       id: 3,
-      name: "Raven",
-      personality: "Bold & Confident",
-      specialty: "Strategic Advice",
-      avatar: "🖤",
-      description: "A fierce competitor who never backs down from a challenge",
-      difficulty: "Intermediate",
-      unlockCost: 500
-    },
-    {
-      id: 4,
       name: "Luna",
       personality: "Sweet & Supportive",
       specialty: "Beginner Friendly",
@@ -115,7 +87,7 @@ const GameLobby = ({ user }: GameLobbyProps) => {
       unlockCost: 0
     },
     {
-      id: 5,
+      id: 4,
       name: "Phoenix",
       personality: "Fiery & Passionate",
       specialty: "High Stakes",
@@ -123,16 +95,6 @@ const GameLobby = ({ user }: GameLobbyProps) => {
       description: "Loves high-stakes games and isn't afraid to take risks",
       difficulty: "Expert",
       unlockCost: 1000
-    },
-    {
-      id: 6,
-      name: "Jade",
-      personality: "Elegant & Sophisticated",
-      specialty: "VIP Experience",
-      avatar: "💎",
-      description: "Premium companion with exclusive interactions and rewards",
-      difficulty: "VIP",
-      unlockCost: 2500
     }
   ];
 
@@ -210,6 +172,7 @@ const GameLobby = ({ user }: GameLobbyProps) => {
           </div>
         </div>
 
+        {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Game Setup */}
           <div className="lg:col-span-2 space-y-8">
@@ -224,14 +187,14 @@ const GameLobby = ({ user }: GameLobbyProps) => {
                   <Card
                     key={environment.id}
                     className={`bg-black/40 backdrop-blur-lg border-purple-500/30 hover:bg-black/60 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
-                      selectedEnvironment?.id === environment.id ? 'ring-2 ring-purple-500' : ''
+                      selectedEnvironment?.id === environment.id ? 'ring-2 ring-purple-500 bg-purple-500/20' : ''
                     } ${!canAffordEnvironment(environment) ? 'opacity-60' : ''}`}
                     onClick={() => canAffordEnvironment(environment) && setSelectedEnvironment(environment)}
                   >
                     <CardHeader>
                       <CardTitle className="text-white flex items-center justify-between">
                         <div className="flex items-center">
-                          <span className="text-2xl mr-3">{environment.icon}</span>
+                          <span className="text-3xl mr-3">{environment.icon}</span>
                           {environment.name}
                         </div>
                         {environment.unlockCost > 0 && (
@@ -243,12 +206,10 @@ const GameLobby = ({ user }: GameLobbyProps) => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-300 text-sm">{environment.description}</p>
-                      <div className="mt-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {environment.mood}
-                        </Badge>
-                      </div>
+                      <p className="text-gray-300 text-sm mb-3">{environment.description}</p>
+                      <Badge variant="secondary" className="text-xs">
+                        {environment.mood}
+                      </Badge>
                     </CardContent>
                   </Card>
                 ))}
@@ -266,26 +227,25 @@ const GameLobby = ({ user }: GameLobbyProps) => {
                   <Card
                     key={companion.id}
                     className={`bg-black/40 backdrop-blur-lg border-purple-500/30 hover:bg-black/60 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
-                      selectedCompanion?.id === companion.id ? 'ring-2 ring-red-500' : ''
+                      selectedCompanion?.id === companion.id ? 'ring-2 ring-red-500 bg-red-500/20' : ''
                     } ${!canAffordCompanion(companion) ? 'opacity-60' : ''}`}
                     onClick={() => canAffordCompanion(companion) && setSelectedCompanion(companion)}
                   >
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-white flex items-center">
-                          <span className="text-2xl mr-3">{companion.avatar}</span>
+                          <span className="text-3xl mr-3">{companion.avatar}</span>
                           {companion.name}
                         </CardTitle>
                         <div className="flex items-center space-x-2">
-                          <Badge variant={companion.difficulty === 'VIP' ? 'default' : 'secondary'}>
+                          <Badge variant={companion.difficulty === 'Expert' ? 'destructive' : 'secondary'}>
                             {companion.difficulty}
                           </Badge>
-                          {companion.difficulty === 'VIP' && <Crown className="w-4 h-4 text-gold-400" />}
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-400 text-sm mb-2">{companion.description}</p>
+                      <p className="text-gray-400 text-sm mb-3">{companion.description}</p>
                       <div className="flex justify-between items-center">
                         <div className="text-sm text-purple-400">
                           {companion.specialty}
@@ -306,7 +266,7 @@ const GameLobby = ({ user }: GameLobbyProps) => {
             {/* Difficulty Selection */}
             <div>
               <h4 className="text-xl font-bold text-white mb-4">Game Difficulty</h4>
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap gap-3">
                 {Object.entries(difficultySettings).map(([key, setting]) => (
                   <Button
                     key={key}
@@ -321,26 +281,26 @@ const GameLobby = ({ user }: GameLobbyProps) => {
                   </Button>
                 ))}
               </div>
-              <p className="text-gray-300 mt-2">
+              <p className="text-gray-300 mt-3 text-sm">
                 {difficultySettings[selectedDifficulty].description} • Starting bet: {difficultySettings[selectedDifficulty].startingBet} chips
               </p>
             </div>
 
             {/* Start Game Button */}
             {selectedCompanion && selectedEnvironment && (
-              <div className="text-center">
+              <div className="text-center mt-8">
                 <Button
                   onClick={handleStartGame}
                   className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold px-12 py-4 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 text-xl"
                 >
                   <Play className="w-6 h-6 mr-3" />
-                  Start Game in {selectedEnvironment.name} with {selectedCompanion.name}
+                  Start Game with {selectedCompanion.name} in {selectedEnvironment.name}
                 </Button>
               </div>
             )}
           </div>
 
-          {/* Game Info Panel */}
+          {/* Info Panel */}
           <div>
             <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
               <Sparkles className="w-6 h-6 mr-2 text-purple-400" />
@@ -361,19 +321,33 @@ const GameLobby = ({ user }: GameLobbyProps) => {
               </CardContent>
             </Card>
 
+            {/* Selection Status */}
             <div className="space-y-4">
-              <h4 className="text-xl font-bold text-white">Quick Actions</h4>
+              <div className="bg-black/40 backdrop-blur-lg rounded-xl p-4 border border-purple-500/30">
+                <h4 className="text-white font-bold mb-3">Your Selection</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Environment:</span>
+                    <span className="text-white">
+                      {selectedEnvironment ? selectedEnvironment.name : 'None selected'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Companion:</span>
+                    <span className="text-white">
+                      {selectedCompanion ? selectedCompanion.name : 'None selected'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Difficulty:</span>
+                    <span className="text-white capitalize">{selectedDifficulty}</span>
+                  </div>
+                </div>
+              </div>
+
               <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 rounded-full">
                 <Coins className="w-5 h-5 mr-2" />
                 Buy More Chips
-              </Button>
-              <Button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold py-3 rounded-full">
-                <Star className="w-5 h-5 mr-2" />
-                View Achievements
-              </Button>
-              <Button className="w-full bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-600 hover:to-yellow-600 text-white font-semibold py-3 rounded-full">
-                <Crown className="w-5 h-5 mr-2" />
-                Upgrade to Premium
               </Button>
             </div>
           </div>
