@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Clock, Coins, Star, Lock, Play, Crown, Heart } from "lucide-react";
+import GameInterface from "./GameInterface";
 
 interface GameLobbyProps {
   user: any;
@@ -11,6 +11,7 @@ interface GameLobbyProps {
 
 const GameLobby = ({ user }: GameLobbyProps) => {
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [isInGame, setIsInGame] = useState(false);
 
   const gameRooms = [
     {
@@ -71,6 +72,18 @@ const GameLobby = ({ user }: GameLobbyProps) => {
     { name: "Raven", personality: "Bold & Confident", specialty: "Strategic Advice" },
     { name: "Luna", personality: "Sweet & Supportive", specialty: "Beginner Friendly" }
   ];
+
+  const handleJoinGame = () => {
+    setIsInGame(true);
+  };
+
+  const handleExitGame = () => {
+    setIsInGame(false);
+  };
+
+  if (isInGame) {
+    return <GameInterface user={user} onExit={handleExitGame} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-6">
@@ -153,6 +166,7 @@ const GameLobby = ({ user }: GameLobbyProps) => {
                         </div>
                       </div>
                       <Button
+                        onClick={handleJoinGame}
                         className={`${
                           room.isPremium
                             ? 'bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-600 hover:to-yellow-600'
