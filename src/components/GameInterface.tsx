@@ -3,23 +3,14 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Volume2, VolumeX, Settings, Home } from "lucide-react";
+import { Volume2, VolumeX, Home } from "lucide-react";
 import { toast } from "sonner";
 
 interface GameInterfaceProps {
   user: any;
+  companion: any;
+  difficulty: string;
   onExit: () => void;
-}
-
-interface AICharacter {
-  id: string;
-  name: string;
-  personality: string;
-  avatar: string;
-  clothingLevel: number;
-  maxClothing: number;
-  mood: 'flirty' | 'confident' | 'nervous' | 'excited';
-  currentAction: string;
 }
 
 interface PlayerCard {
@@ -28,54 +19,83 @@ interface PlayerCard {
   id: string;
 }
 
-const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
+const GameInterface = ({ user, companion, difficulty, onExit }: GameInterfaceProps) => {
   const [gamePhase, setGamePhase] = useState<'betting' | 'cards' | 'reveal' | 'result'>('betting');
   const [playerCards, setPlayerCards] = useState<PlayerCard[]>([]);
   const [playerChips, setPlayerChips] = useState(user?.chips || 1000);
   const [currentBet, setCurrentBet] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
   const [isAITalking, setIsAITalking] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [roundsPlayed, setRoundsPlayed] = useState(0);
+  const [playerWins, setPlayerWins] = useState(0);
 
-  const [aiCharacter, setAiCharacter] = useState<AICharacter>({
-    id: '1',
-    name: 'Scarlett',
-    personality: 'Mysterious & Seductive',
-    avatar: '💃',
+  const [aiCharacter, setAiCharacter] = useState({
+    ...companion,
     clothingLevel: 5,
     maxClothing: 5,
-    mood: 'flirty',
-    currentAction: 'Welcome to our private game...'
+    mood: 'flirty' as 'flirty' | 'confident' | 'nervous' | 'excited',
+    currentAction: `Hello there... I'm ${companion.name}. Ready to play some strip poker?`
   });
 
   const [gameHistory, setGameHistory] = useState<string[]>([]);
 
-  // AI responses based on game state
-  const aiResponses = {
-    betting: [
-      "I'm feeling lucky tonight... are you brave enough to match my confidence?",
-      "Such an interesting bet... I wonder what you're thinking behind those eyes.",
-      "Mmm, playing it safe or just getting warmed up?",
-      "Your move, darling. Don't keep me waiting too long."
-    ],
-    cards: [
-      "Let's see what fate has dealt us...",
-      "The cards never lie, but I might be bluffing.",
-      "I have a good feeling about this hand.",
-      "Your poker face is... adorable."
-    ],
-    winning: [
-      "Better luck next time, sweetheart.",
-      "Don't look so disappointed, we're just getting started.",
-      "I told you I was feeling lucky tonight.",
-      "Maybe you'll have better luck with the next hand?"
-    ],
-    losing: [
-      "Well played... I underestimated you.",
-      "Enjoy the view while it lasts.",
-      "You're more skilled than I thought.",
-      "This just got more interesting..."
-    ]
+  // Difficulty-based settings
+  const difficultySettings = {
+    beginner: { winChance: 0.7, startingBet: 50, aiSkill: 0.3 },
+    intermediate: { winChance: 0.5, startingBet: 100, aiSkill: 0.5 },
+    expert: { winChance: 0.3, startingBet: 200, aiSkill: 0.8 }
+  };
+
+  // AI responses based on companion personality and game state
+  const getAIResponse = (situation: string) => {
+    const responses = {
+      scarlett: {
+        betting: [
+          "I'm feeling dangerous tonight... are you brave enough to match my confidence?",
+          "Such an interesting choice... I wonder what's going through your mind.",
+          "Mmm, playing it safe or just getting started?",
+          "Your move, darling. Don't keep me waiting too long."
+        ],
+        winning: [
+          "Better luck next time, sweetheart.",
+          "Don't look so disappointed, we're just getting started.",
+          "I told you I was feeling dangerous tonight.",
+          "Maybe you'll have better luck with the next hand?"
+        ],
+        losing: [
+          "Well played... I underestimated you.",
+          "Enjoy the view while it lasts.",
+          "You're more skilled than I thought.",
+          "This just got more interesting..."
+        ]
+      },
+      victoria: {
+        betting: [
+          "Ooh, this is exciting! What's your strategy?",
+          "I love the thrill of not knowing what comes next!",
+          "You look so focused... it's adorable!",
+          "Let's see what fate has in store for us!"
+        ],
+        winning: [
+          "Aww, don't worry! You'll get me next time!",
+          "That was fun! Want to try again?",
+          "You're such a good sport about this!",
+          "I got lucky that time, I think!"
+        ],
+        losing: [
+          "Oh my! You're really good at this!",
+          "I should have seen that coming!",
+          "You're full of surprises!",
+          "Okay, okay, you win this round!"
+        ]
+      }
+    };
+
+    const companionName = companion.name.toLowerCase();
+    const companionResponses = responses[companionName] || responses.victoria;
+    const situationResponses = companionResponses[situation] || companionResponses.betting;
+    
+    return situationResponses[Math.floor(Math.random() * situationResponses.length)];
   };
 
   // Generate random poker hand
@@ -121,13 +141,14 @@ const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
     setGamePhase('cards');
     setPlayerCards(generateCards());
     
-    const response = aiResponses.betting[Math.floor(Math.random() * aiResponses.betting.length)];
+    const response = getAIResponse('betting');
     speakAI(response);
     
-    // AI mood change
+    // AI mood change based on bet size
+    const betRatio = currentBet / playerChips;
     setAiCharacter(prev => ({
       ...prev,
-      mood: Math.random() > 0.5 ? 'confident' : 'flirty'
+      mood: betRatio > 0.3 ? 'excited' : 'flirty'
     }));
   };
 
@@ -135,29 +156,32 @@ const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
   const handleReveal = () => {
     setGamePhase('reveal');
     
-    const response = aiResponses.cards[Math.floor(Math.random() * aiResponses.cards.length)];
+    const response = "Let's see what we both got...";
     speakAI(response);
     
     setTimeout(() => {
-      const playerWins = Math.random() > 0.4; // 60% chance player wins
+      const settings = difficultySettings[difficulty];
+      const playerWins = Math.random() < settings.winChance;
       setGamePhase('result');
+      setRoundsPlayed(prev => prev + 1);
       
       if (playerWins) {
+        setPlayerWins(prev => prev + 1);
         setPlayerChips(prev => prev + (currentBet * 2));
         setAiCharacter(prev => ({
           ...prev,
           clothingLevel: Math.max(0, prev.clothingLevel - 1),
           mood: 'nervous'
         }));
-        const response = aiResponses.losing[Math.floor(Math.random() * aiResponses.losing.length)];
+        const response = getAIResponse('losing');
         speakAI(response);
         toast.success("You won! " + response);
       } else {
         setAiCharacter(prev => ({
           ...prev,
-          mood: 'excited'
+          mood: 'confident'
         }));
-        const response = aiResponses.winning[Math.floor(Math.random() * aiResponses.winning.length)];
+        const response = getAIResponse('winning');
         speakAI(response);
         toast.error("You lost! " + response);
       }
@@ -167,7 +191,8 @@ const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
   // Start new round
   const newRound = () => {
     setGamePhase('betting');
-    setCurrentBet(50);
+    const settings = difficultySettings[difficulty];
+    setCurrentBet(settings.startingBet);
     setAiCharacter(prev => ({
       ...prev,
       currentAction: "Ready for another round?",
@@ -205,6 +230,9 @@ const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
           <div className="text-white text-lg font-bold">
             Chips: {playerChips.toLocaleString()}
           </div>
+          <div className="text-white text-sm">
+            Rounds: {roundsPlayed} | Wins: {playerWins}
+          </div>
           <Button
             onClick={() => setIsMuted(!isMuted)}
             variant="ghost"
@@ -234,6 +262,9 @@ const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
                     value={(aiCharacter.clothingLevel / aiCharacter.maxClothing) * 100} 
                     className="h-3"
                   />
+                  <div className="text-xs text-gray-400 mt-1">
+                    {aiCharacter.clothingLevel}/{aiCharacter.maxClothing} items remaining
+                  </div>
                 </div>
                 
                 {/* AI Speech */}
@@ -241,6 +272,13 @@ const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
                   <p className="text-white text-center italic">
                     "{aiCharacter.currentAction}"
                   </p>
+                </div>
+
+                {/* Companion Info */}
+                <div className="mt-4 text-sm text-gray-300">
+                  <p>Specialty: {aiCharacter.specialty}</p>
+                  <p>Difficulty: {difficulty}</p>
+                  <p>Mood: {aiCharacter.mood}</p>
                 </div>
               </div>
             </CardContent>
@@ -252,7 +290,9 @@ const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
           <Card className="bg-black/40 backdrop-blur-lg border-purple-500/30">
             <CardContent className="p-6">
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-white mb-6">Strip Poker</h2>
+                <h2 className="text-3xl font-bold text-white mb-6">
+                  Strip Poker vs {aiCharacter.name}
+                </h2>
                 
                 {gamePhase === 'betting' && (
                   <div className="space-y-6">
@@ -260,7 +300,7 @@ const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
                       <label className="text-white text-lg mb-4 block">Place Your Bet</label>
                       <div className="flex items-center justify-center space-x-4">
                         <Button 
-                          onClick={() => setCurrentBet(Math.max(50, currentBet - 50))}
+                          onClick={() => setCurrentBet(Math.max(difficultySettings[difficulty].startingBet, currentBet - 50))}
                           className="bg-red-600 hover:bg-red-700"
                         >
                           -50
@@ -335,7 +375,7 @@ const GameInterface = ({ user, onExit }: GameInterfaceProps) => {
             </CardContent>
           </Card>
 
-          {/* Game History */}
+          {/* Game Chat */}
           <Card className="bg-black/40 backdrop-blur-lg border-purple-500/30 mt-6">
             <CardContent className="p-4">
               <h4 className="text-white font-bold mb-3">Game Chat</h4>

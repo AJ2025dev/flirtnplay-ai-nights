@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Clock, Coins, Star, Lock, Play, Crown, Heart } from "lucide-react";
+import { Coins, Star, Play, Crown, Heart, Sparkles } from "lucide-react";
 import GameInterface from "./GameInterface";
 
 interface GameLobbyProps {
@@ -10,79 +11,102 @@ interface GameLobbyProps {
 }
 
 const GameLobby = ({ user }: GameLobbyProps) => {
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedCompanion, setSelectedCompanion] = useState(null);
   const [isInGame, setIsInGame] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] = useState('beginner');
 
-  const gameRooms = [
+  const aiCompanions = [
     {
       id: 1,
-      name: "Beginner's Paradise",
-      players: 6,
-      maxPlayers: 8,
-      buyIn: 100,
-      level: "Beginner",
-      isPremium: false,
-      description: "Perfect for new players to learn the ropes"
+      name: "Scarlett",
+      personality: "Mysterious & Seductive",
+      specialty: "Mind Games",
+      avatar: "💃",
+      description: "A sultry temptress who loves psychological warfare at the poker table",
+      difficulty: "Expert",
+      unlockCost: 0
     },
     {
       id: 2,
-      name: "High Roller Heaven",
-      players: 4,
-      maxPlayers: 6,
-      buyIn: 1000,
-      level: "Expert",
-      isPremium: false,
-      description: "For experienced players seeking big wins"
+      name: "Victoria",
+      personality: "Playful & Flirty",
+      specialty: "Encouragement",
+      avatar: "👸",
+      description: "Sweet and encouraging, perfect for beginners learning the game",
+      difficulty: "Beginner",
+      unlockCost: 0
     },
     {
       id: 3,
-      name: "VIP Exclusive",
-      players: 2,
-      maxPlayers: 4,
-      buyIn: 2500,
-      level: "VIP",
-      isPremium: true,
-      description: "Premium members only - luxury gaming experience"
+      name: "Raven",
+      personality: "Bold & Confident",
+      specialty: "Strategic Advice",
+      avatar: "🖤",
+      description: "A fierce competitor who never backs down from a challenge",
+      difficulty: "Intermediate",
+      unlockCost: 500
     },
     {
       id: 4,
-      name: "Midnight Madness",
-      players: 8,
-      maxPlayers: 10,
-      buyIn: 500,
-      level: "Intermediate",
-      isPremium: false,
-      description: "Late night thrills with special rewards"
+      name: "Luna",
+      personality: "Sweet & Supportive",
+      specialty: "Beginner Friendly",
+      avatar: "🌙",
+      description: "Gentle and patient, she'll guide you through every hand",
+      difficulty: "Beginner",
+      unlockCost: 0
     },
     {
       id: 5,
-      name: "Tournament Arena",
-      players: 12,
-      maxPlayers: 20,
-      buyIn: 250,
-      level: "Tournament",
-      isPremium: false,
-      description: "Compete for the weekly championship"
+      name: "Phoenix",
+      personality: "Fiery & Passionate",
+      specialty: "High Stakes",
+      avatar: "🔥",
+      description: "Loves high-stakes games and isn't afraid to take risks",
+      difficulty: "Expert",
+      unlockCost: 1000
+    },
+    {
+      id: 6,
+      name: "Jade",
+      personality: "Elegant & Sophisticated",
+      specialty: "VIP Experience",
+      avatar: "💎",
+      description: "Premium companion with exclusive interactions and rewards",
+      difficulty: "VIP",
+      unlockCost: 2500
     }
   ];
 
-  const aiCompanions = [
-    { name: "Scarlett", personality: "Mysterious & Seductive", specialty: "Mind Games" },
-    { name: "Victoria", personality: "Playful & Flirty", specialty: "Encouragement" },
-    { name: "Raven", personality: "Bold & Confident", specialty: "Strategic Advice" },
-    { name: "Luna", personality: "Sweet & Supportive", specialty: "Beginner Friendly" }
-  ];
+  const difficultySettings = {
+    beginner: { name: "Beginner", startingBet: 50, description: "Easy wins, learn the basics" },
+    intermediate: { name: "Intermediate", startingBet: 100, description: "Balanced gameplay" },
+    expert: { name: "Expert", startingBet: 200, description: "Challenging AI, high rewards" }
+  };
 
-  const handleJoinGame = () => {
+  const handleStartGame = () => {
+    if (!selectedCompanion) return;
     setIsInGame(true);
   };
 
   const handleExitGame = () => {
     setIsInGame(false);
+    setSelectedCompanion(null);
   };
 
-  if (isInGame) {
-    return <GameInterface user={user} onExit={handleExitGame} />;
+  const canAffordCompanion = (companion) => {
+    return user?.chips >= companion.unlockCost;
+  };
+
+  if (isInGame && selectedCompanion) {
+    return (
+      <GameInterface 
+        user={user} 
+        companion={selectedCompanion}
+        difficulty={selectedDifficulty}
+        onExit={handleExitGame} 
+      />
+    );
   }
 
   return (
@@ -123,114 +147,127 @@ const GameLobby = ({ user }: GameLobbyProps) => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Game Rooms */}
+          {/* AI Companions Selection */}
           <div className="lg:col-span-2">
             <h3 className="text-3xl font-bold text-white mb-6 flex items-center">
-              <Play className="w-8 h-8 mr-3 text-purple-400" />
-              Available Game Rooms
+              <Heart className="w-8 h-8 mr-3 text-red-500" />
+              Choose Your AI Companion
             </h3>
-            <div className="space-y-6">
-              {gameRooms.map((room) => (
+            
+            {/* Difficulty Selection */}
+            <div className="mb-6">
+              <h4 className="text-xl font-bold text-white mb-4">Game Difficulty</h4>
+              <div className="flex space-x-4">
+                {Object.entries(difficultySettings).map(([key, setting]) => (
+                  <Button
+                    key={key}
+                    onClick={() => setSelectedDifficulty(key)}
+                    className={`px-6 py-3 rounded-full font-semibold transition-all duration-200 ${
+                      selectedDifficulty === key
+                        ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white'
+                        : 'bg-black/40 text-gray-300 hover:bg-black/60'
+                    }`}
+                  >
+                    {setting.name}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-gray-300 mt-2">
+                {difficultySettings[selectedDifficulty].description} • Starting bet: {difficultySettings[selectedDifficulty].startingBet} chips
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {aiCompanions.map((companion) => (
                 <Card
-                  key={room.id}
+                  key={companion.id}
                   className={`bg-black/40 backdrop-blur-lg border-purple-500/30 hover:bg-black/60 transition-all duration-300 cursor-pointer transform hover:scale-105 ${
-                    selectedRoom === room.id ? 'ring-2 ring-purple-500' : ''
-                  }`}
-                  onClick={() => setSelectedRoom(room.id)}
+                    selectedCompanion?.id === companion.id ? 'ring-2 ring-red-500' : ''
+                  } ${!canAffordCompanion(companion) ? 'opacity-60' : ''}`}
+                  onClick={() => canAffordCompanion(companion) && setSelectedCompanion(companion)}
                 >
                   <CardHeader>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <CardTitle className="text-white flex items-center">
-                        {room.isPremium && <Crown className="w-5 h-5 text-gold-400 mr-2" />}
-                        {room.name}
+                        <span className="text-2xl mr-3">{companion.avatar}</span>
+                        {companion.name}
                       </CardTitle>
                       <div className="flex items-center space-x-2">
-                        <Badge variant={room.level === 'VIP' ? 'default' : 'secondary'}>
-                          {room.level}
+                        <Badge variant={companion.difficulty === 'VIP' ? 'default' : 'secondary'}>
+                          {companion.difficulty}
                         </Badge>
-                        {room.isPremium && <Lock className="w-4 h-4 text-gold-400" />}
+                        {companion.difficulty === 'VIP' && <Crown className="w-4 h-4 text-gold-400" />}
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-300 mb-4">{room.description}</p>
+                    <p className="text-gray-300 mb-2">{companion.personality}</p>
+                    <p className="text-gray-400 text-sm mb-4">{companion.description}</p>
                     <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center text-blue-400">
-                          <Users className="w-4 h-4 mr-1" />
-                          {room.players}/{room.maxPlayers}
-                        </div>
+                      <div className="text-sm text-purple-400">
+                        Specialty: {companion.specialty}
+                      </div>
+                      {companion.unlockCost > 0 && (
                         <div className="flex items-center text-gold-400">
                           <Coins className="w-4 h-4 mr-1" />
-                          {room.buyIn} chips
+                          {companion.unlockCost}
                         </div>
-                      </div>
-                      <Button
-                        onClick={handleJoinGame}
-                        className={`${
-                          room.isPremium
-                            ? 'bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-600 hover:to-yellow-600'
-                            : 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600'
-                        } text-white font-semibold px-6 py-2 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200`}
-                        disabled={room.isPremium && !user?.isPremium}
-                      >
-                        {room.isPremium && !user?.isPremium ? 'Premium Only' : 'Join Game'}
-                      </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          </div>
 
-          {/* AI Companions Sidebar */}
-          <div>
-            <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-              <Heart className="w-6 h-6 mr-2 text-red-500" />
-              AI Companions
-            </h3>
-            <div className="space-y-4">
-              {aiCompanions.map((companion, index) => (
-                <Card key={index} className="bg-black/40 backdrop-blur-lg border-red-500/30 hover:bg-black/60 transition-all duration-300">
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold">{companion.name.charAt(0)}</span>
-                      </div>
-                      <div>
-                        <h4 className="text-white font-semibold">{companion.name}</h4>
-                        <p className="text-sm text-gray-400">{companion.specialty}</p>
-                      </div>
-                    </div>
-                    <p className="text-gray-300 text-sm mb-3">{companion.personality}</p>
-                    <Button 
-                      size="sm" 
-                      className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold rounded-full"
-                    >
-                      Select Companion
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="mt-8">
-              <h4 className="text-xl font-bold text-white mb-4">Quick Actions</h4>
-              <div className="space-y-3">
-                <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 rounded-full">
-                  <Coins className="w-5 h-5 mr-2" />
-                  Buy More Chips
-                </Button>
-                <Button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold py-3 rounded-full">
-                  <Star className="w-5 h-5 mr-2" />
-                  View Achievements
-                </Button>
-                <Button className="w-full bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-600 hover:to-yellow-600 text-white font-semibold py-3 rounded-full">
-                  <Crown className="w-5 h-5 mr-2" />
-                  Upgrade to Premium
+            {selectedCompanion && (
+              <div className="mt-8 text-center">
+                <Button
+                  onClick={handleStartGame}
+                  className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold px-12 py-4 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 text-xl"
+                >
+                  <Play className="w-6 h-6 mr-3" />
+                  Start Game with {selectedCompanion.name}
                 </Button>
               </div>
+            )}
+          </div>
+
+          {/* Game Info & Quick Actions */}
+          <div>
+            <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+              <Sparkles className="w-6 h-6 mr-2 text-purple-400" />
+              Game Information
+            </h3>
+            
+            <Card className="bg-black/40 backdrop-blur-lg border-purple-500/30 mb-6">
+              <CardContent className="p-6">
+                <h4 className="text-lg font-bold text-white mb-4">How to Play</h4>
+                <ul className="text-gray-300 space-y-2 text-sm">
+                  <li>• Choose your AI companion and difficulty</li>
+                  <li>• Place your bet to start each round</li>
+                  <li>• Get dealt 5 cards for poker</li>
+                  <li>• Win hands to progress with your companion</li>
+                  <li>• Lose hands and face the consequences</li>
+                  <li>• Enjoy unique AI interactions and responses</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <div className="space-y-4">
+              <h4 className="text-xl font-bold text-white">Quick Actions</h4>
+              <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 rounded-full">
+                <Coins className="w-5 h-5 mr-2" />
+                Buy More Chips
+              </Button>
+              <Button className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold py-3 rounded-full">
+                <Star className="w-5 h-5 mr-2" />
+                View Achievements
+              </Button>
+              <Button className="w-full bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-600 hover:to-yellow-600 text-white font-semibold py-3 rounded-full">
+                <Crown className="w-5 h-5 mr-2" />
+                Upgrade to Premium
+              </Button>
             </div>
           </div>
         </div>
