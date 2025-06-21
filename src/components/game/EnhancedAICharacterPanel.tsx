@@ -49,8 +49,12 @@ const EnhancedAICharacterPanel = ({ character, environment, difficulty, isAITalk
                 className="w-full h-full object-cover rounded-lg"
                 onError={(e) => {
                   // Fallback to emoji avatar if image fails to load
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling.style.display = 'flex';
+                  const target = e.currentTarget as HTMLImageElement;
+                  const fallback = target.nextElementSibling as HTMLDivElement;
+                  target.style.display = 'none';
+                  if (fallback) {
+                    fallback.style.display = 'flex';
+                  }
                 }}
               />
               <div className="hidden w-full h-full bg-gradient-to-r from-pink-500 to-red-500 rounded-lg items-center justify-center text-6xl">
